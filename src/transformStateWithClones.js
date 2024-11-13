@@ -8,39 +8,26 @@
  */
 function transformStateWithClones(state, actions) {
   const stateHistory = [];
-  let currentState = { ...state }; // робимо копію початкового стану
+  let currentState = { ...state };
 
-  actions.forEach((action) => {
-    let stateCopy = { ...currentState };
-    // робимо копію поточного стану для роботи з ним
+  for (const action of actions) {
+    let newState = { ...currentState };
 
-    switch (action.type) {
-      case 'clear':
-        stateCopy = {}; // очищаємо стан
-        break;
-
-      case 'addProperties':
-        stateCopy = { ...stateCopy, ...action.extraData };
-        // додаємо властивості з extraData
-        break;
-
-      case 'removeProperties':
-        action.keysToRemove.forEach((key) => {
-          delete stateCopy[key]; // видаляємо ключі, якщо вони існують
-        });
-        break;
-
-      default:
-        // eslint-disable-next-line no-console
-        console.error(`Unknown action type: ${action.type}`); // помилка для невідомих типів дій
-        break;
+    if (action.type === 'addProperties') {
+      Object.assign(newState, action.extraData);
+    } else if (action.type === 'removeProperties') {
+      for (const key of action.keysToRemove) {
+        delete newState[key];
+      }
+    } else if (action.type === 'clear') {
+      newState = {};
     }
 
-    stateHistory.push(stateCopy); // додаємо змінений стан в історію
-    currentState = stateCopy; // оновлюємо поточний стан
-  });
+    stateHistory.push(newState);
+    currentState = newState;
+  }
 
-  return stateHistory; // повертаємо масив станів
+  return stateHistory;
 }
 
 module.exports = transformStateWithClones;
